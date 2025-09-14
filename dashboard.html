@@ -3,90 +3,127 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dashboard Hub</title>
+<title>Dashboard</title>
 <link href="https://fonts.googleapis.com/css2?family=Amarante&family=Noto+Sans+KR&display=swap" rel="stylesheet">
 <style>
 body { margin:0; font-family:'Noto Sans KR', sans-serif; background:#f5f5f5; color:#222; display:flex; justify-content:center; align-items:flex-start; min-height:100vh; }
-main.container { max-width:600px; width:100%; padding:2rem; display:flex; flex-direction:column; align-items:center; }
-h1 { font-family:'Amarante', cursive; text-align:center; margin-bottom:1rem; }
-#avatar { width:120px; height:120px; border-radius:50%; object-fit:cover; border:2px solid #222; margin-bottom:1rem; cursor:pointer; transition:transform 0.2s; }
-#avatar:hover { transform:scale(1.05); }
+.container { width:100%; max-width:900px; padding:2rem; display:flex; flex-direction:column; align-items:center; position:relative; }
+
+h1 { font-family:'Amarante', cursive; margin-bottom:1rem; text-align:center; }
 input[type="text"], input[type="file"] { width:100%; padding:0.5rem; margin:0.5rem 0; font-size:1rem; }
-#saveHubBtn { padding:0.6rem 1.5rem; font-size:1rem; cursor:pointer; margin-top:1rem; background:#222; color:#fff; border:none; border-radius:5px; transition:background 0.2s; }
-#saveHubBtn:hover { background:#555; }
-#profileError { color:red; margin-top:0.5rem; }
+button { padding:0.6rem 1.5rem; font-size:1rem; cursor:pointer; margin-top:1rem; background:#222; color:#fff; border:none; border-radius:5px; transition:background 0.2s; }
+button:hover { background:#555; }
+#errorMsg { color:red; margin-top:0.5rem; }
+section { width:100%; transition: opacity 0.5s ease, transform 0.5s ease; }
+.hidden { display:none; opacity:0; transform: translateY(20px); }
+#dashboardSection { display:flex; flex-direction:column; align-items:center; }
+.dashboard-links a { display:block; margin:0.5rem 0; font-size:1.2rem; color:#222; text-decoration:none; }
+.dashboard-links a:hover { color:#555; }
+#avatarPreview { width:120px; height:120px; border-radius:50%; object-fit:cover; border:2px solid #222; margin-bottom:1rem; cursor:pointer; transition:transform 0.2s; }
+#avatarPreview:hover { transform:scale(1.05); }
 </style>
 </head>
 <body>
-<main class="container">
-  <h1>Profile Hub</h1>
-  <img id="avatar" src="default-avatar.png" alt="Avatar">
-  <input type="text" id="usernameInput" placeholder="Enter your username">
-  <input type="file" id="avatarInput" accept="image/*">
-  <button id="saveHubBtn">Save & Go to Hub</button>
-  <p id="profileError"></p>
-</main>
+<div class="container">
+  
+  <!-- Profile Setup Section -->
+  <section id="setupSection" class="hidden">
+    <h1>Set Your Name & Avatar</h1>
+    <img id="avatarPreview" src="default-avatar.png" alt="Avatar">
+    <input type="file" id="avatarInput" accept="image/*" style="display:none;">
+    <input type="text" id="usernameInput" placeholder="Enter your name">
+    <button id="saveProfileBtn">Continue</button>
+    <p id="errorMsg"></p>
+  </section>
+
+  <!-- Dashboard Section -->
+  <section id="dashboardSection" class="hidden">
+    <h1>Welcome, <span id="displayName"></span></h1>
+    <div class="dashboard-links">
+      <a href="watch-together.html">Watch Together</a>
+      <a href="chat-room.html">Chat Room</a>
+      <a href="games.html">Games</a>
+    </div>
+  </section>
+</div>
 
 <script type="module">
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-// ✅ Using pre-registered Supabase credentials
-const supabaseUrl = SUPABASE_URL;
-const supabaseKey = SUPABASE_KEY;
+// ✅ Supabase credentials
+const supabaseUrl = "https://ecotxkhwtddjfnrubpki.supabase.co";
+const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVjb3R4a2h3dGRkamZucnVicGtpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc4MDk5MzEsImV4cCI6MjA3MzM4NTkzMX0.PjwCJ4HdeaQ_VYErmYctrMu8PsHN2AQxup5jmPd2CEY";
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-const avatarImg = document.getElementById('avatar');
+const setupSection = document.getElementById('setupSection');
+const dashboardSection = document.getElementById('dashboardSection');
 const usernameInput = document.getElementById('usernameInput');
-const avatarInput = document.getElementById('avatarInput');
-const saveBtn = document.getElementById('saveHubBtn');
-const profileError = document.getElementById('profileError');
+const saveProfileBtn = document.getElementById('saveProfileBtn');
+const errorMsg = document.getElementById('errorMsg');
+const displayName = document.getElementById('displayName');
 
-// Load profile for current user
-async function loadProfile() {
+const avatarInput = document.getElementById('avatarInput');
+const avatarPreview = document.getElementById('avatarPreview');
+
+let currentUser;
+
+// Avatar click opens file selector
+avatarPreview.addEventListener('click', ()=>avatarInput.click());
+
+// Load user profile on page load
+async function initDashboard(){
   const { data: { session } } = await supabase.auth.getSession();
   if(!session || !session.user){ window.location.href = 'login.html'; return; }
-  const user = session.user;
+  currentUser = session.user;
 
-  const { data: profile } = await supabase.from('profiles').select('*').eq('user_id', user.id).single();
-  if(profile){
-    usernameInput.value = profile.username;
-    if(profile.avatar_url){ avatarImg.src = profile.avatar_url; }
+  const { data: profile } = await supabase.from('profiles').select('*').eq('user_id', currentUser.id).single();
+
+  if(profile && profile.username){
+    // User already set up → show dashboard
+    displayName.textContent = profile.username;
+    showSection(dashboardSection);
   } else {
-    // Auto-create default profile
-    const defaultUsername = 'New User';
-    await supabase.from('profiles').insert({ user_id: user.id, username: defaultUsername });
-    usernameInput.value = defaultUsername;
+    // User not set up → show profile setup
+    showSection(setupSection);
   }
 }
 
-avatarImg.addEventListener('click', ()=>avatarInput.click());
+// Helper to show a section with fade-in
+function showSection(section){
+  section.classList.remove('hidden');
+  section.style.opacity = 0;
+  section.style.transform = 'translateY(20px)';
+  setTimeout(()=>{
+    section.style.opacity = 1;
+    section.style.transform = 'translateY(0)';
+  },50);
+}
 
-// Save profile & redirect
-saveBtn.addEventListener('click', async () => {
-  profileError.textContent = '';
+// Save profile and show dashboard
+saveProfileBtn.addEventListener('click', async ()=>{
+  errorMsg.textContent='';
   const username = usernameInput.value.trim();
-  if(!username){ profileError.textContent = 'Username cannot be empty.'; return; }
-
-  const { data: { session } } = await supabase.auth.getSession();
-  const user = session.user;
+  if(!username){ errorMsg.textContent='Name cannot be empty.'; return; }
 
   let avatar_url = null;
   if(avatarInput.files[0]){
-    const { data, error } = await supabase.storage.from('avatars').upload(`${user.id}.png`, avatarInput.files[0], { upsert:true });
-    if(error){ profileError.textContent = 'Avatar upload failed: ' + error.message; return; }
-    const { publicUrl } = supabase.storage.from('avatars').getPublicUrl(`${user.id}.png`);
+    const { error } = await supabase.storage.from('avatars').upload(`${currentUser.id}.png`, avatarInput.files[0], { upsert:true });
+    if(error){ errorMsg.textContent='Avatar upload failed: '+error.message; return; }
+    const { publicUrl } = supabase.storage.from('avatars').getPublicUrl(`${currentUser.id}.png`);
     avatar_url = publicUrl;
+    avatarPreview.src = avatar_url;
   }
 
-  const { error } = await supabase.from('profiles').upsert([{ user_id: user.id, username, avatar_url }], { onConflict: 'user_id' });
-  if(error){ profileError.textContent = error.message; return; }
+  const { error } = await supabase.from('profiles').upsert([{ user_id: currentUser.id, username, avatar_url }], { onConflict:'user_id' });
+  if(error){ errorMsg.textContent=error.message; return; }
 
-  // Redirect to main hub section
-  window.location.href = 'hub.html';
+  // Switch to dashboard view
+  displayName.textContent = username;
+  setupSection.classList.add('hidden');
+  showSection(dashboardSection);
 });
 
-// Initialize
-loadProfile();
+initDashboard();
 </script>
 </body>
 </html>
