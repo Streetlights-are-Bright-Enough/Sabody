@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Amarante&family=Noto+Sans+KR&display=swap" rel="stylesheet">
+<style>
+body {
+  margin:0; font-family:'Noto Sans KR', sans-serif; background:#f5f5f5; color:#222;
+  display:flex; justify-content:center; align-items:flex-start; min-height:100vh;
+}
+main.container {
+  max-width:1000px; width:100%; padding:2rem;
+  display:flex; flex-direction:column; align-items:center;
+}
+h1 {
+  font-family:'Amarante', cursive; text-align:center; margin-bottom:0.5rem;
+  opacity:0; animation:fadeIn 1s forwards;
+}
+#welcomeMsg {
+  font-size:1.3rem; margin-bottom:1rem; text-align:center; opacity:0;
+  animation:fadeIn 1.5s forwards; animation-delay:0.5s;
+}
+#profileFormContainer {
+  display:none; margin-bottom:1rem; opacity:0; animation:fadeIn 1s forwards;
+}
+#profileFormContainer input[type="text"], #profileFormContainer input[type="file"] {
+  padding:0.5rem; font-size:1rem; margin:0.3rem 0; width:220px;
+}
+#profileFormContainer button { padding:0.5rem 1rem; font-size:1rem; cursor:pointer; margin-top:0.5rem; }
+#profileError { color:red; margin-top:0.5rem; }
+#avatar {
+  width:100px; height:100px; border-radius:50%; margin-bottom:1rem; display:none;
+  object-fit:cover; border:2px solid #222;
+}
+#logoutBtn {
+  display:block; margin:2rem auto 0 auto; padding:0.5rem 1.5rem; font-size:1rem; cursor:pointer;
+  background:#222; color:#fff; border:none; border-radius:5px; transition:background 0.2s;
+}
+#logoutBtn:hover { background:#555; }
+.cards {
+  display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:1rem;
+  margin-top:2rem; width:100%; opacity:0; animation:fadeIn 1s forwards; animation-delay:1s;
+}
+.card {
+  background:#fff; border-radius:12px; padding:1.5rem; box-shadow:0 3px 10px rgba(0,0,0,0.1);
+  text-align:center; transition:transform 0.25s, box-shadow 0.25s;
+}
+.card:hover {
+  transform:scale(1.05); box-shadow:0 6px 20px rgba(0,0,0,0.2);
+}
+@keyframes fadeIn { to {opacity:1;} }
+</style>
+</head>
+<body>
+<main class="container">
+  <h1>Dashboard</h1>
+  <div id="profileSection">
+    <img id="avatar" src="default-avatar.png" alt="Avatar">
+    <p id="welcomeMsg">Loading user info...</p>
+    <div id="profileFormContainer">
+      <input type="text" id="usernameInput" placeholder="Enter username">
+      <input type="file" id="avatarInput" accept="image/*">
+      <button id="saveProfileBtn">Save Profile</button>
+      <p id="profileError"></p>
+    </div>
+  </div>
+
+  <div class="cards" id="dashboardCards" style="display:none;"></div>
+  <button id="logoutBtn">Logout</button>
+</main>
+
+<script type="module">
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+const supabaseUrl = 'https://ecotxkhwtddjfnrubpki.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVjb3R4a2h3dGRkamZucnVicGtpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc4MDk5MzEsImV4cCI6MjA3MzM4NTkzMX0.PjwCJ4HdeaQ_VYErmYctrMu8PsHN2AQxup5jmPd2CEY';
+const supabase = createClient(supabaseUrl, supabaseKey);
+
+async function loadDashboard() {
+  const { data: { session }, error } = await supabase.auth.getSession();
+  if(!session || !session.user) return;
+  const user = session.user;
+
+  const welcomeMsg = document.getElementById('welcomeMsg');
+  const profileFormContainer = document.getElementById('profileFormContainer');
+  const dashboardCards = document.getElementById('dashboardCards');
+  const avatarImg = document.getElementById('avatar');
+
+  // Fetch profile
+  const { data: profile, error: profileError } = await supabase
+    .from('profiles')
+    .select('*')
+    .eq('user_id', user.id)
+    .single();
+
+  if(profileError && profileError.code !== 'PGRST116') {
+    welcomeMsg.textContent = 'Error loading profile.';
+    console.error(profileError);
+    return;
+  }
+
+  if(profile){
+    welcomeMsg.textContent = `Welcome back, ${profile.username}!`;
+    if(profile.avatar_url){
+      avatarImg.src = profile.avatar_url;
+      avatarImg.style.display = 'block';
+    } else avatarImg.style.display = 'none';
+    loadDashboardCards(user.id);
+  } else {
+    welcomeMsg.textContent = 'Create your profile';
+    profileFormContainer.style.display = 'block';
+  }
+}
+
+async function loadDashboardCards(user_id){
+  const { data: metrics } = await supabase
+    .from('user_metrics')
+    .select('*')
+    .eq('user_id', user_id);
+
+  const dashboardCards = document.getElementById('dashboardCards');
+  dashboardCards.innerHTML = '';
+
+  if(metrics && metrics.length > 0){
+    metrics.forEach(m => {
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.innerHTML = `📊 ${m.metric_name}<br>${m.metric_value}`;
+      dashboardCards.appendChild(card);
+    });
+  } else {
+    ['Widget 1','Widget 2','Widget 3','Widget 4'].forEach(w => {
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.textContent = w + ': Placeholder';
+      dashboardCards.appendChild(card);
+    });
+  }
+  dashboardCards.style.display = 'grid';
+}
+
+// Profile save & avatar upload
+document.getElementById('saveProfileBtn').addEventListener('click', async () => {
+  const username = document.getElementById('usernameInput').value.trim();
+  const avatarFile = document.getElementById('avatarInput').files[0];
+  const profileError = document.getElementById('profileError');
+  profileError.textContent = '';
+
+  if(!username){
+    profileError.textContent = 'Username cannot be empty.';
+    return;
+  }
+
+  const { data: { session } } = await supabase.auth.getSession();
+  const user = session.user;
+  let avatar_url = null;
+
+  if(avatarFile){
+    const { data, error: uploadError } = await supabase.storage
+      .from('avatars')
+      .upload(`${user.id}.png`, avatarFile, { upsert:true });
+    if(uploadError){
+      profileError.textContent = 'Avatar upload failed: ' + uploadError.message;
+      return;
+    }
+    const { publicUrl } = supabase.storage.from('avatars').getPublicUrl(`${user.id}.png`);
+    avatar_url = publicUrl;
+  }
+
+  const { error } = await supabase.from('profiles').upsert([
+    { user_id: user.id, username, avatar_url }
+  ], { onConflict: 'user_id' });
+
+  if(error){
+    profileError.textContent = error.message;
+    return;
+  }
+
+  document.getElementById('profileFormContainer').style.display = 'none';
+  loadDashboard();
+});
+
+// Logout
+document.getElementById('logoutBtn').addEventListener('click', async () => {
+  await supabase.auth.signOut();
+  window.location.href = 'login.html';
+});
+
+// Auth-safe session handling
+supabase.auth.onAuthStateChange((event, session) => {
+  if(!session || !session.user){
+    window.location.href = 'login.html';
+  } else {
+    loadDashboard();
+  }
+});
+</script>
+</body>
+</html>

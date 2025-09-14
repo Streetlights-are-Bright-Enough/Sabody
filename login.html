@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login</title>
+  <link href="https://fonts.googleapis.com/css2?family=Amarante&family=Noto+Sans+KR&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="container">
+    <h1>Login</h1>
+    <form id="loginForm">
+      <input type="email" placeholder="Email" id="email" required><br><br>
+      <input type="password" placeholder="Password" id="password" required><br><br>
+      <button type="submit">Login</button>
+    </form>
+    <p id="errorMsg" style="color:red;"></p>
+    <p>Don't have an account? <a href="signup.html">Sign Up</a></p>
+  </main>
+
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+    const supabaseUrl = 'https://ecotxkhwtddjfnrubpki.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVjb3R4a2h3dGRkamZucnVicGtpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc4MDk5MzEsImV4cCI6MjA3MzM4NTkzMX0.PjwCJ4HdeaQ_VYErmYctrMu8PsHN2AQxup5jmPd2CEY';
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+
+      try {
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) throw error;
+        window.location.href = 'dashboard.html';
+      } catch (err) {
+        document.getElementById('errorMsg').textContent = err.message;
+      }
+    });
+  </script>
+</body>
+</html>

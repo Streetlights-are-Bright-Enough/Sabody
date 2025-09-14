@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Streetlights</title>
+  <link href="https://fonts.googleapis.com/css2?family=Amarante&family=Noto+Sans+KR&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="container">
+    <a href="login.html" class="circle-link">
+      <img src="https://img.infinite-fusion-calculator.com/fusion/195.195.9a65.png" alt="Streetlights" class="circle-image">
+    </a>
+    <h1 class="heading">Streetlights</h1>
+    <h2 class="subheading" data-ko="명함에는 나는 선생님, 마음속에는 나는 프로그래머, 마음 깊이에는 나는 게이머" 
+        data-en="On my business card, I am a teacher, In my mind, I am a programmer, In my heart, I am a gamer">
+      명함에는 나는 선생님, 마음속에는 나는 프로그래머, 마음 깊이에는 나는 게이머
+    </h2>
+  </main>
+
+  <script>
+    // Hover text toggle
+    const subheading = document.querySelector('.subheading');
+    const koText = subheading.dataset.ko;
+    const enText = subheading.dataset.en;
+
+    document.querySelector('.circle-link').addEventListener('mouseenter', () => {
+      subheading.textContent = enText;
+    });
+    document.querySelector('.circle-link').addEventListener('mouseleave', () => {
+      subheading.textContent = koText;
+    });
+  </script>
+</body>
+</html>
