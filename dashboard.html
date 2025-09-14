@@ -27,7 +27,7 @@ section { width:100%; transition: opacity 0.5s ease, transform 0.5s ease; }
 <div class="container">
   
   <!-- Profile Setup Section -->
-  <section id="setupSection" class="hidden">
+  <section id="setupSection">
     <h1>Set Your Name & Avatar</h1>
     <img id="avatarPreview" src="default-avatar.png" alt="Avatar">
     <input type="file" id="avatarInput" accept="image/*" style="display:none;">
@@ -70,7 +70,18 @@ let currentUser;
 // Avatar click opens file selector
 avatarPreview.addEventListener('click', ()=>avatarInput.click());
 
-// Load user profile on page load
+// Show a section with fade-in
+function showSection(section){
+  section.classList.remove('hidden');
+  section.style.opacity = 0;
+  section.style.transform = 'translateY(20px)';
+  setTimeout(()=>{
+    section.style.opacity = 1;
+    section.style.transform = 'translateY(0)';
+  },50);
+}
+
+// Initialize dashboard
 async function initDashboard(){
   const { data: { session } } = await supabase.auth.getSession();
   if(!session || !session.user){ window.location.href = 'login.html'; return; }
@@ -81,22 +92,13 @@ async function initDashboard(){
   if(profile && profile.username){
     // User already set up → show dashboard
     displayName.textContent = profile.username;
+    if(profile.avatar_url) avatarPreview.src = profile.avatar_url;
+    setupSection.classList.add('hidden');
     showSection(dashboardSection);
   } else {
-    // User not set up → show profile setup
-    showSection(setupSection);
+    // User not set up → show setup form
+    setupSection.classList.remove('hidden');
   }
-}
-
-// Helper to show a section with fade-in
-function showSection(section){
-  section.classList.remove('hidden');
-  section.style.opacity = 0;
-  section.style.transform = 'translateY(20px)';
-  setTimeout(()=>{
-    section.style.opacity = 1;
-    section.style.transform = 'translateY(0)';
-  },50);
 }
 
 // Save profile and show dashboard
@@ -117,12 +119,13 @@ saveProfileBtn.addEventListener('click', async ()=>{
   const { error } = await supabase.from('profiles').upsert([{ user_id: currentUser.id, username, avatar_url }], { onConflict:'user_id' });
   if(error){ errorMsg.textContent=error.message; return; }
 
-  // Switch to dashboard view
+  // Show dashboard
   displayName.textContent = username;
   setupSection.classList.add('hidden');
   showSection(dashboardSection);
 });
 
+// Run on load
 initDashboard();
 </script>
 </body>
