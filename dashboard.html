@@ -1,132 +1,87 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dashboard</title>
-<link href="https://fonts.googleapis.com/css2?family=Amarante&family=Noto+Sans+KR&display=swap" rel="stylesheet">
-<style>
-body { margin:0; font-family:'Noto Sans KR', sans-serif; background:#f5f5f5; color:#222; display:flex; justify-content:center; align-items:flex-start; min-height:100vh; }
-.container { width:100%; max-width:900px; padding:2rem; display:flex; flex-direction:column; align-items:center; position:relative; }
-
-h1 { font-family:'Amarante', cursive; margin-bottom:1rem; text-align:center; }
-input[type="text"], input[type="file"] { width:100%; padding:0.5rem; margin:0.5rem 0; font-size:1rem; }
-button { padding:0.6rem 1.5rem; font-size:1rem; cursor:pointer; margin-top:1rem; background:#222; color:#fff; border:none; border-radius:5px; transition:background 0.2s; }
-button:hover { background:#555; }
-#errorMsg { color:red; margin-top:0.5rem; }
-section { width:100%; transition: opacity 0.5s ease, transform 0.5s ease; }
-.hidden { display:none; opacity:0; transform: translateY(20px); }
-#dashboardSection { display:flex; flex-direction:column; align-items:center; }
-.dashboard-links a { display:block; margin:0.5rem 0; font-size:1.2rem; color:#222; text-decoration:none; }
-.dashboard-links a:hover { color:#555; }
-#avatarPreview { width:120px; height:120px; border-radius:50%; object-fit:cover; border:2px solid #222; margin-bottom:1rem; cursor:pointer; transition:transform 0.2s; }
-#avatarPreview:hover { transform:scale(1.05); }
-</style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Hub Cinema Dashboard</title>
+<link rel="stylesheet" href="style.css" />
+<script type="module" src="app.js" defer></script>
 </head>
 <body>
-<div class="container">
-  
-  <!-- Profile Setup Section -->
-  <section id="setupSection">
-    <h1>Set Your Name & Avatar</h1>
-    <img id="avatarPreview" src="default-avatar.png" alt="Avatar">
-    <input type="file" id="avatarInput" accept="image/*" style="display:none;">
-    <input type="text" id="usernameInput" placeholder="Enter your name">
-    <button id="saveProfileBtn">Continue</button>
-    <p id="errorMsg"></p>
-  </section>
-
-  <!-- Dashboard Section -->
-  <section id="dashboardSection" class="hidden">
-    <h1>Welcome, <span id="displayName"></span></h1>
-    <div class="dashboard-links">
-      <a href="watch-together.html">Watch Together</a>
-      <a href="chat-room.html">Chat Room</a>
-      <a href="games.html">Games</a>
+<div id="app" class="dashboard">
+  <!-- Sidebar -->
+  <aside class="sidebar" role="navigation">
+    <h1 class="logo">Hub Cinema</h1>
+    <nav>
+      <ul>
+        <li><button data-section="profile">Profile</button></li>
+        <li><button data-section="rooms">Rooms</button></li>
+        <li><button data-section="watch">Watch Together</button></li>
+        <li><button data-section="uploads">Uploads</button></li>
+      </ul>
+    </nav>
+    <div class="theme-toggle">
+      <label>
+        <input type="checkbox" id="themeSwitch" />
+        <span>🌙 / ☀️</span>
+      </label>
     </div>
-  </section>
+    <button id="logoutBtn" class="logout">Logout</button>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="content">
+    <!-- Profile -->
+    <section id="profile" class="panel active" aria-label="User Profile">
+      <h2>Your Profile</h2>
+      <div id="profileInfo"></div>
+    </section>
+
+    <!-- Rooms -->
+    <section id="rooms" class="panel" aria-label="Rooms">
+      <h2>Your Rooms</h2>
+      <ul id="roomList"></ul>
+      <button id="createRoomBtn">+ Create Room</button>
+    </section>
+
+    <!-- Watch Together -->
+    <section id="watch" class="panel" aria-label="Watch Together">
+      <h2>Watch Together</h2>
+      <div class="watch-grid">
+        <div class="video-area">
+          <iframe id="videoPlayer" allowfullscreen aria-label="Shared video player"></iframe>
+          <div class="controls" id="hostControls">
+            <button id="playBtn">▶️</button>
+            <button id="pauseBtn">⏸️</button>
+            <button id="seekBtn">⏩</button>
+            <button id="fullscreenBtn">⛶</button>
+            <button id="nextBtn">⏭️ Next</button>
+          </div>
+        </div>
+        <div class="chat-area" aria-label="Chat">
+          <ul id="chatMessages"></ul>
+          <form id="chatForm">
+            <input type="text" id="chatInput" placeholder="Type a message..." aria-label="Chat message"/>
+            <button type="submit">Send</button>
+          </form>
+          <div class="playlist">
+            <h3>Up Next</h3>
+            <ul id="playlistItems"></ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Uploads -->
+    <section id="uploads" class="panel" aria-label="Uploads">
+      <h2>Your Uploads</h2>
+      <ul id="uploadList"></ul>
+      <form id="uploadForm">
+        <input type="url" id="uploadUrl" placeholder="PixelDrain link" required />
+        <button type="submit">Upload</button>
+      </form>
+    </section>
+  </main>
 </div>
-
-<script type="module">
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
-
-// ✅ Supabase credentials
-const supabaseUrl = "https://ecotxkhwtddjfnrubpki.supabase.co";
-const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVjb3R4a2h3dGRkamZucnVicGtpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc4MDk5MzEsImV4cCI6MjA3MzM4NTkzMX0.PjwCJ4HdeaQ_VYErmYctrMu8PsHN2AQxup5jmPd2CEY";
-const supabase = createClient(supabaseUrl, supabaseKey);
-
-const setupSection = document.getElementById('setupSection');
-const dashboardSection = document.getElementById('dashboardSection');
-const usernameInput = document.getElementById('usernameInput');
-const saveProfileBtn = document.getElementById('saveProfileBtn');
-const errorMsg = document.getElementById('errorMsg');
-const displayName = document.getElementById('displayName');
-
-const avatarInput = document.getElementById('avatarInput');
-const avatarPreview = document.getElementById('avatarPreview');
-
-let currentUser;
-
-// Avatar click opens file selector
-avatarPreview.addEventListener('click', ()=>avatarInput.click());
-
-// Show a section with fade-in
-function showSection(section){
-  section.classList.remove('hidden');
-  section.style.opacity = 0;
-  section.style.transform = 'translateY(20px)';
-  setTimeout(()=>{
-    section.style.opacity = 1;
-    section.style.transform = 'translateY(0)';
-  },50);
-}
-
-// Initialize dashboard
-async function initDashboard(){
-  const { data: { session } } = await supabase.auth.getSession();
-  if(!session || !session.user){ window.location.href = 'login.html'; return; }
-  currentUser = session.user;
-
-  const { data: profile } = await supabase.from('profiles').select('*').eq('user_id', currentUser.id).single();
-
-  if(profile && profile.username){
-    // User already set up → show dashboard
-    displayName.textContent = profile.username;
-    if(profile.avatar_url) avatarPreview.src = profile.avatar_url;
-    setupSection.classList.add('hidden');
-    showSection(dashboardSection);
-  } else {
-    // User not set up → show setup form
-    setupSection.classList.remove('hidden');
-  }
-}
-
-// Save profile and show dashboard
-saveProfileBtn.addEventListener('click', async ()=>{
-  errorMsg.textContent='';
-  const username = usernameInput.value.trim();
-  if(!username){ errorMsg.textContent='Name cannot be empty.'; return; }
-
-  let avatar_url = null;
-  if(avatarInput.files[0]){
-    const { error } = await supabase.storage.from('avatars').upload(`${currentUser.id}.png`, avatarInput.files[0], { upsert:true });
-    if(error){ errorMsg.textContent='Avatar upload failed: '+error.message; return; }
-    const { publicUrl } = supabase.storage.from('avatars').getPublicUrl(`${currentUser.id}.png`);
-    avatar_url = publicUrl;
-    avatarPreview.src = avatar_url;
-  }
-
-  const { error } = await supabase.from('profiles').upsert([{ user_id: currentUser.id, username, avatar_url }], { onConflict:'user_id' });
-  if(error){ errorMsg.textContent=error.message; return; }
-
-  // Show dashboard
-  displayName.textContent = username;
-  setupSection.classList.add('hidden');
-  showSection(dashboardSection);
-});
-
-// Run on load
-initDashboard();
-</script>
 </body>
 </html>
