@@ -1,36 +1,60 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="utf-8" />
+  <meta http-equiv="x-ua-compatible" content="ie=edge" />
   <title>Streetlights</title>
-  <link href="https://fonts.googleapis.com/css2?family=Amarante&family=Noto+Sans+KR&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css">
+  <meta name="description" content="Streetlights. On my business card, I am a teacher; in my mind, a programmer; in my heart, a gamer." />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="theme-color" content="#ffffff" />
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="Streetlights — Personal"/>
+  <meta property="og:description" content="On my business card, I am a teacher; in my mind, a programmer; in my heart, a gamer."/>
+  <meta property="og:type" content="website" />
+  <meta property="og:image" content="images/og-image.jpg" />
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image" />
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Amarante&family=Noto+Sans+KR:wght@300;400;700&display=swap" rel="stylesheet">
+
+  <!-- Unified stylesheet -->
+  <link rel="stylesheet" href="style.css">
+
+  <link rel="icon" href="images/logo.svg" />
 </head>
 <body>
-  <main class="container">
-    <a href="login.html" class="circle-link">
-      <img src="https://img.infinite-fusion-calculator.com/fusion/195.195.9a65.png" alt="Streetlights" class="circle-image">
+  <main class="page page-center">
+    <a href="login.html" class="avatar-link" aria-label="Go to login">
+      <!-- use a local image in images/ (fallback to remote if missing) -->
+      <img src="images/avatar.png" alt="Streetlights avatar" class="avatar">
     </a>
-    <h1 class="heading">Streetlights</h1>
-    <h2 class="subheading" data-ko="명함에는 나는 선생님, 마음속에는 나는 프로그래머, 마음 깊이에는 나는 게이머" 
-        data-en="On my business card, I am a teacher, In my mind, I am a programmer, In my heart, I am a gamer">
+
+    <h1 class="title">Streetlights</h1>
+
+    <p class="subtitle" id="subtitle" data-ko="명함에는 나는 선생님, 마음속에는 나는 프로그래머, 마음 깊이에는 나는 게이머"
+       data-en="On my business card, I am a teacher, In my mind, I am a programmer, In my heart, I am a gamer">
       명함에는 나는 선생님, 마음속에는 나는 프로그래머, 마음 깊이에는 나는 게이머
-    </h2>
+    </p>
+
+    <nav class="small-nav" aria-label="Now you see me">
+      <a href="signup.html">Sign up</a> ·
+      <a href="login.html">Login</a> ·
+    </nav>
   </main>
 
-  <script>
-    // Hover text toggle
-    const subheading = document.querySelector('.subheading');
-    const koText = subheading.dataset.ko;
-    const enText = subheading.dataset.en;
-
-    document.querySelector('.circle-link').addEventListener('mouseenter', () => {
-      subheading.textContent = enText;
-    });
-    document.querySelector('.circle-link').addEventListener('mouseleave', () => {
-      subheading.textContent = koText;
-    });
+  <script type="module">
+    // subtitle hover toggle — progressive enhancement
+    const subtitleEl = document.getElementById('subtitle');
+    const avatarLink = document.querySelector('.avatar-link');
+    if (subtitleEl && avatarLink) {
+      const ko = subtitleEl.dataset.ko;
+      const en = subtitleEl.dataset.en;
+      avatarLink.addEventListener('pointerenter', () => subtitleEl.textContent = en);
+      avatarLink.addEventListener('pointerleave', () => subtitleEl.textContent = ko);
+    }
   </script>
 </body>
 </html>
