@@ -1,0 +1,55 @@
+/* --- Smooth theme transition --- */
+:root, [data-theme="dark"] {
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+/* --- Video fade-in on change --- */
+.video-area iframe {
+  transition: opacity 0.5s ease;
+  opacity: 1;
+}
+.video-area iframe.fade-out {
+  opacity: 0;
+}
+
+/* --- Playlist item transitions --- */
+.playlist li {
+  padding:0.25rem 0;
+  border-bottom:1px solid var(--shadow);
+  transition: background 0.3s ease, color 0.3s ease, transform 0.3s ease;
+  cursor: pointer;
+}
+.playlist li:hover {
+  background: var(--accent);
+  color: #fff;
+  transform: scale(1.02);
+}
+.playlist li.current {
+  font-weight:bold;
+  color: var(--accent);
+  background: rgba(88,101,242,0.1);
+  transform: scale(1.05);
+}
+
+/* --- Button hover/focus states --- */
+.sidebar button, .controls button, #uploadForm button, #chatForm button {
+  transition: background 0.3s ease, transform 0.2s ease;
+}
+.sidebar button:hover, .controls button:hover, #uploadForm button:hover, #chatForm button:hover {
+  transform: translateY(-2px);
+}
+
+/* --- Chat new message animation --- */
+#chatMessages li {
+  opacity: 0;
+  transform: translateY(10px);
+  animation: chatFadeIn 0.3s forwards;
+}
+@keyframes chatFadeIn {
+  to { opacity:1; transform:translateY(0); }
+}
+
+/* --- Playlist scroll smooth --- */
+.playlist {
+  scroll-behavior: smooth;
+}
