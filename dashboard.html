@@ -3,19 +3,18 @@
 <head>
   <meta charset="utf-8" />
   <title>Hub Cinema — Dashboard</title>
-  <meta name="description" content="Hub Cinema dashboard — rooms, watch together, uploads, chat." />
+  <meta name="description" content="Hub Cinema dashboard — watch together, chat, uploads." />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <link rel="stylesheet" href="style.css" />
-  <meta name="theme-color" content="#0b1220" />
 </head>
 <body>
   <div class="dashboard">
-    <aside class="sidebar" role="navigation" aria-label="Main sidebar">
+    <!-- Sidebar -->
+    <aside class="sidebar" role="navigation">
       <div class="brand">
         <img src="images/logo.svg" alt="Hub Cinema logo" class="brand-logo">
-        <strong class="brand-name">Hub Cinema</strong>
+        <strong>Hub Cinema</strong>
       </div>
-
       <nav>
         <ul class="menu">
           <li><button data-section="profile" class="menu-btn">Profile</button></li>
@@ -24,86 +23,77 @@
           <li><button data-section="uploads" class="menu-btn">Uploads</button></li>
         </ul>
       </nav>
-
       <div class="sidebar-bottom">
         <label class="theme-switch">
-          <input type="checkbox" id="themeSwitch" aria-label="Toggle dark theme">
-          <span class="toggle-visual">🌙</span>
+          <input type="checkbox" id="themeSwitch">
+          <span>🌙</span>
         </label>
-        <button id="logoutBtn" class="btn btn-ghost logout">Logout</button>
+        <button id="logoutBtn" class="btn btn-ghost">Logout</button>
       </div>
     </aside>
 
+    <!-- Main -->
     <main class="main">
-      <!-- Basic page header -->
       <header class="main-header">
-        <button id="sidebarCollapse" class="icon-btn" aria-label="Toggle sidebar">☰</button>
-        <h1 class="main-title">Dashboard</h1>
-        <div id="profileInfo" class="profile-info" aria-live="polite"></div>
+        <h1>Dashboard</h1>
+        <div id="profileInfo"></div>
       </header>
 
-      <!-- Panels -->
-      <section id="profile" class="panel active" aria-label="Profile">
+      <!-- Profile -->
+      <section id="profile" class="panel active">
         <h2>Your Profile</h2>
-        <p id="profileSummary">Loading profile…</p>
+        <div id="profileSummary"></div>
       </section>
 
-      <section id="rooms" class="panel" aria-label="Rooms">
+      <!-- Rooms -->
+      <section id="rooms" class="panel">
         <h2>Your Rooms</h2>
-        <ul id="roomList" class="room-list" aria-label="List of rooms"></ul>
+        <ul id="roomList"></ul>
         <button id="createRoomBtn" class="btn">+ Create Room</button>
       </section>
 
-      <section id="watch" class="panel" aria-label="Watch Together">
+      <!-- Watch Together -->
+      <section id="watch" class="panel">
         <h2>Watch Together</h2>
-
         <div class="watch-grid">
           <div class="video-area">
-            <iframe id="videoPlayer" title="Shared video player" allowfullscreen sandbox="allow-scripts allow-same-origin"></iframe>
+            <!-- HERE: HTML5 video instead of iframe -->
+            <video id="videoPlayer" class="video-player" controls playsinline></video>
 
             <div class="controls" id="hostControls" hidden>
               <button id="playBtn" class="btn small">Play</button>
               <button id="pauseBtn" class="btn small">Pause</button>
               <button id="seekBtn" class="btn small">Seek +60s</button>
-              <button id="fullscreenBtn" class="btn small">Fullscreen</button>
               <button id="nextBtn" class="btn small">Next</button>
             </div>
           </div>
 
-          <aside class="chat-area" aria-label="Chat and playlist">
-            <div class="chat">
-              <ul id="chatMessages" class="chat-messages" aria-live="polite"></ul>
-
-              <form id="chatForm" class="chat-form">
-                <label for="chatInput" class="sr-only">Message</label>
-                <input id="chatInput" type="text" placeholder="Type a message..." autocomplete="off" />
-                <button type="submit" class="btn small">Send</button>
-              </form>
-            </div>
-
+          <aside class="chat-area">
+            <ul id="chatMessages" class="chat-messages"></ul>
+            <form id="chatForm" class="chat-form">
+              <input id="chatInput" type="text" placeholder="Type a message..." />
+              <button type="submit" class="btn small">Send</button>
+            </form>
             <div class="playlist">
               <h3>Up Next</h3>
-              <ul id="playlistItems" class="playlist-list"></ul>
+              <ul id="playlistItems"></ul>
             </div>
           </aside>
         </div>
       </section>
 
-      <section id="uploads" class="panel" aria-label="Uploads">
+      <!-- Uploads -->
+      <section id="uploads" class="panel">
         <h2>Your Uploads</h2>
-        <ul id="uploadList" class="upload-list" aria-live="polite"></ul>
-
+        <ul id="uploadList"></ul>
         <form id="uploadForm" class="form-inline">
-          <label for="uploadUrl" class="sr-only">Upload URL</label>
-          <input id="uploadUrl" type="url" placeholder="Paste PixelDrain or file URL" required />
+          <input id="uploadUrl" type="url" placeholder="Video URL" required />
           <button type="submit" class="btn">Upload</button>
         </form>
       </section>
-
     </main>
   </div>
 
-  <!-- Unified app JS (module) -->
   <script type="module" src="app.js"></script>
 </body>
 </html>
