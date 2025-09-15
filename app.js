@@ -194,15 +194,56 @@ function updateHostControls(){
   hostControls.hidden = currentUser?.id !== hostId;
 }
 
-function setVideo(url){
-  if(!videoPlayer) return;
-  // fade-out class managed by CSS (use class for smoothness)
-  videoPlayer.classList.add('fade-out');
-  setTimeout(()=> {
-    videoPlayer.src = url ? (url + (url.includes('?') ? '&embed' : '?embed')) : '';
-    videoPlayer.classList.remove('fade-out');
+// === SET VIDEO ===
+function setVideo(url) {
+  if (!videoPlayer) return;
+  videoPlayer.classList.add("fade-out");
+  setTimeout(() => {
+    videoPlayer.src = url;
+    videoPlayer.load();
+    if (currentUser.id === hostId) {
+      // host auto plays
+      videoPlayer.play().catch(() => {});
+    }
+    videoPlayer.classList.remove("fade-out");
   }, 250);
 }
+
+// === HOST CONTROLS ===
+document.getElementById("playBtn")?.addEventListener("click", () => {
+  videoPlayer.play();
+  broadcast("play");
+});
+document.getElementById("pauseBtn")?.addEventListener("click", () => {
+  videoPlayer.pause();
+  broadcast("pause");
+});
+document.getElementById("seekBtn")?.addEventListener("click", () => {
+  const newTime = videoPlayer.currentTime + 60;
+  videoPlayer.currentTime = newTime;
+  broadcast("seek", newTime);
+});
+document.getElementById("nextBtn")?.addEventListener("click", () => {
+  if (currentVideoIndex + 1 < currentPlaylist.length) {
+    currentVideoIndex++;
+    setVideo(currentPlaylist[currentVideoIndex].video_url);
+    renderPlaylist();
+    broadcast("nextVideo", { index: currentVideoIndex });
+  }
+});
+
+// === APPLY CONTROLS FROM SUPABASE ===
+function handleControl(action, value) {
+  if (action === "play") videoPlayer.play();
+  if (action === "pause") videoPlayer.pause();
+  if (action === "seek" && value) videoPlayer.currentTime = value;
+  if (action === "nextVideo" && value?.index != null) {
+    currentVideoIndex = value.index;
+    setVideo(currentPlaylist[currentVideoIndex]?.video_url || "");
+    renderPlaylist();
+  }
+}
+
 
 function renderPlaylist(){
   if(!playlistItems) return;
