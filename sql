@@ -45,8 +45,10 @@ create table playlists (
   created_at timestamp with time zone default now()
 );
 alter table playlists enable row level security;
+drop policy if exists "Select playlists" on playlists;
 create policy "Select playlists" on playlists
-for select using (room_id in (select id from rooms));
+for select
+using (exists (select 1 from rooms where rooms.id = playlists.room_id));
 
 -- -------------------------
 -- PLAYLIST ITEMS
@@ -59,8 +61,14 @@ create table playlist_items (
   created_at timestamp with time zone default now()
 );
 alter table playlist_items enable row level security;
+drop policy if exists "Select playlist_items" on playlist_items;
 create policy "Select playlist_items" on playlist_items
-for select using (playlist_id in (select id from playlists));
+for select
+using (exists (
+  select 1
+  from playlists p
+  where p.id = playlist_items.playlist_id
+));
 
 -- -------------------------
 -- CHAT MESSAGES
@@ -73,13 +81,19 @@ create table messages (
   created_at timestamp with time zone default now()
 );
 alter table messages enable row level security;
+drop policy if exists "Insert messages in room" on messages;
 create policy "Insert messages in room" on messages
 for insert
 using (auth.uid() is not null)
 with check (auth.uid() = user_id);
+drop policy if exists "Select messages" on messages;
 create policy "Select messages" on messages
 for select
-using (room_id in (select id from rooms));
+using (exists (
+  select 1
+  from rooms r
+  where r.id = messages.room_id
+));
 
 -- -------------------------
 -- HOST CONTROLS
@@ -93,6 +107,7 @@ create table controls (
   created_at timestamp with time zone default now()
 );
 alter table controls enable row level security;
+drop policy if exists "Insert controls by host" on controls;
 create policy "Insert controls by host" on controls
 for insert
 using (
@@ -102,9 +117,13 @@ using (
       and rooms.owner = auth.uid()
   )
 );
+drop policy if exists "Select controls" on controls;
 create policy "Select controls" on controls
 for select
-using (room_id in (select id from rooms));
+using (exists (
+  select 1 from rooms r
+  where r.id = controls.room_id
+));
 
 -- -------------------------
 -- USER UPLOADS
@@ -116,6 +135,7 @@ create table uploads (
   created_at timestamp with time zone default now()
 );
 alter table uploads enable row level security;
+drop policy if exists "Manage own uploads" on uploads;
 create policy "Manage own uploads" on uploads
 for all
 using (user_id = auth.uid())
