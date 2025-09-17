@@ -1,99 +1,49 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <title>Hub Cinema — Dashboard</title>
-  <meta name="description" content="Hub Cinema dashboard — watch together, chat, uploads." />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Watch Together Hub</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
-  <div class="dashboard">
-    <!-- Sidebar -->
-    <aside class="sidebar" role="navigation">
-      <div class="brand">
-        <img src="images/logo.svg" alt="Hub Cinema logo" class="brand-logo">
-        <strong>Hub Cinema</strong>
+  <header>
+    <h1>Watch Together Hub</h1>
+    <div class="controls">
+      <button id="mode-toggle">🌙</button>
+      <button onclick="logout()">Logout</button>
+    </div>
+  </header>
+
+  <main>
+    <!-- Hub Section -->
+    <section id="hub-section">
+      <div class="create-room">
+        <input type="text" id="room-name" placeholder="Enter room name..." />
+        <button onclick="createRoom()">Create Room</button>
       </div>
-      <nav>
-        <ul class="menu">
-          <li><button data-section="profile" class="menu-btn">Profile</button></li>
-          <li><button data-section="rooms" class="menu-btn">Rooms</button></li>
-          <li><button data-section="watch" class="menu-btn">Watch Together</button></li>
-          <li><button data-section="uploads" class="menu-btn">Uploads</button></li>
-        </ul>
-      </nav>
-      <div class="sidebar-bottom">
-        <label class="theme-switch">
-          <input type="checkbox" id="themeSwitch">
-          <span>🌙</span>
-        </label>
-        <button id="logoutBtn" class="btn btn-ghost">Logout</button>
+      <div id="room-list" class="rooms"></div>
+    </section>
+
+    <!-- Room Section -->
+    <section id="room-section" class="hidden">
+      <button onclick="leaveRoom()" class="leave-room">← Back to Hub</button>
+      <h2 id="current-room-name">Room</h2>
+      <p>Active Users: <span id="active-users">0</span></p>
+
+      <div class="chat">
+        <div id="chat-messages" class="chat-messages"></div>
+        <input type="text" id="chat-input" placeholder="Type a message..." />
+        <button onclick="sendMessage()">Send</button>
       </div>
-    </aside>
+    </section>
+  </main>
 
-    <!-- Main -->
-    <main class="main">
-      <header class="main-header">
-        <h1>Dashboard</h1>
-        <div id="profileInfo"></div>
-      </header>
+  <footer>
+    <p>&copy; 2025 Watch Together Hub</p>
+  </footer>
 
-      <!-- Profile -->
-      <section id="profile" class="panel active">
-        <h2>Your Profile</h2>
-        <div id="profileSummary"></div>
-      </section>
-
-      <!-- Rooms -->
-      <section id="rooms" class="panel">
-        <h2>Your Rooms</h2>
-        <ul id="roomList"></ul>
-        <button id="createRoomBtn" class="btn">+ Create Room</button>
-      </section>
-
-      <!-- Watch Together -->
-      <section id="watch" class="panel">
-        <h2>Watch Together</h2>
-        <div class="watch-grid">
-          <div class="video-area">
-            <!-- HERE: HTML5 video instead of iframe -->
-            <video id="videoPlayer" class="video-player" controls playsinline></video>
-
-            <div class="controls" id="hostControls" hidden>
-              <button id="playBtn" class="btn small">Play</button>
-              <button id="pauseBtn" class="btn small">Pause</button>
-              <button id="seekBtn" class="btn small">Seek +60s</button>
-              <button id="nextBtn" class="btn small">Next</button>
-            </div>
-          </div>
-
-          <aside class="chat-area">
-            <ul id="chatMessages" class="chat-messages"></ul>
-            <form id="chatForm" class="chat-form">
-              <input id="chatInput" type="text" placeholder="Type a message..." />
-              <button type="submit" class="btn small">Send</button>
-            </form>
-            <div class="playlist">
-              <h3>Up Next</h3>
-              <ul id="playlistItems"></ul>
-            </div>
-          </aside>
-        </div>
-      </section>
-
-      <!-- Uploads -->
-      <section id="uploads" class="panel">
-        <h2>Your Uploads</h2>
-        <ul id="uploadList"></ul>
-        <form id="uploadForm" class="form-inline">
-          <input id="uploadUrl" type="url" placeholder="Video URL" required />
-          <button type="submit" class="btn">Upload</button>
-        </form>
-      </section>
-    </main>
-  </div>
-
-  <script type="module" src="app.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
