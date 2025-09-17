@@ -3,6 +3,7 @@ const SUPABASE_URL = 'YOUR_SUPABASE_URL';
 const SUPABASE_KEY = 'YOUR_SUPABASE_ANON_KEY';
 const supabase = Supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+// DOM elements
 const hubSection = document.getElementById('hub-section');
 const roomSection = document.getElementById('room-section');
 const roomList = document.getElementById('room-list');
@@ -45,70 +46,83 @@ async function fetchRooms() {
 async function createRoom() {
   const roomName = document.getElementById('room-name').value.trim();
   if (!roomName) return alert('Enter a room name');
-  await supabase.from('rooms').insert([{ name: roomName, active_users: 0 }]);
+  await supabase.from('rooms').insert([{ name: roomName }]);
   document.getElementById('room-name').value = '';
 }
 
-// Join room (animated)
+// Join room (trigger-driven)
 async function joinRoom(roomId, roomName) {
   currentRoomId = roomId;
+
   hubSection.classList.add('hidden');
   setTimeout(() => {
     roomSection.classList.remove('hidden');
     roomSection.classList.add('showing');
   }, 500);
+
   currentRoomName.textContent = roomName;
 
-  // Increment active users
-  await supabase.from('rooms').update({ active_users: supabase.literal('active_users + 1') }).eq('id', roomId);
-
-  // System message
-  await supabase.from('messages').insert([{ room_id: roomId, user: 'SYSTEM', content: 'A user has joined', system: true }]);
+  // Insert system message; triggers handle active_users
+  await supabase.from('messages').insert([{
+    room_id: roomId,
+    user: 'SYSTEM',
+    content: 'A user has joined',
+    system: true
+  }]);
 
   fetchRoomInfo();
   subscribeChat();
 }
 
-// Leave room
+// Leave room (trigger-driven)
 async function leaveRoom() {
   if (!currentRoomId) return;
+
   roomSection.classList.add('hidden');
   setTimeout(() => {
     roomSection.classList.remove('showing');
     hubSection.classList.remove('hidden');
   }, 500);
 
-  await supabase.from('rooms').update({ active_users: supabase.literal('active_users - 1') }).eq('id', currentRoomId);
-
-  await supabase.from('messages').insert([{ room_id: currentRoomId, user: 'SYSTEM', content: 'A user has left', system: true }]);
+  await supabase.from('messages').insert([{
+    room_id: currentRoomId,
+    user: 'SYSTEM',
+    content: 'A user has left',
+    system: true
+  }]);
 
   currentRoomId = null;
   fetchRooms();
   chatMessages.innerHTML = '';
 }
 
-// Fetch room info
+// Fetch room info (active_users)
 async function fetchRoomInfo() {
+  if (!currentRoomId) return;
   const { data, error } = await supabase.from('rooms').select('*').eq('id', currentRoomId).single();
   if (error) return console.error(error);
   activeUsersEl.textContent = data.active_users || 0;
 }
 
-// Chat functionality
+// Chat send
 async function sendMessage() {
   const content = chatInput.value.trim();
   if (!content) return;
-  await supabase.from('messages').insert([{ room_id: currentRoomId, user: 'Anon', content }]);
+  await supabase.from('messages').insert([{
+    room_id: currentRoomId,
+    user: 'Anon', // optional: replace with actual username
+    content
+  }]);
   chatInput.value = '';
 }
 
-// Append message with system formatting
+// Append message with smooth fade
 function appendMessage(msg) {
   const div = document.createElement('div');
   if (msg.system) {
     div.textContent = msg.content;
     div.style.fontStyle = 'italic';
-    div.style.color = 'var(--accent)';
+    div.style.color = '#00bcd4';
     div.style.opacity = '0.7';
   } else {
     div.textContent = `${msg.user}: ${msg.content}`;
@@ -121,23 +135,26 @@ function appendMessage(msg) {
 
 // Subscribe to realtime updates
 function subscribeChat() {
+  // Messages realtime
   supabase
     .channel(`room_${currentRoomId}`)
     .on('postgres_changes', { event: '*', schema: 'public', table: 'messages', filter: `room_id=eq.${currentRoomId}` }, payload => {
       appendMessage(payload.new);
+      fetchRoomInfo(); // active_users updates automatically
     })
     .subscribe();
 
+  // Rooms list realtime
   supabase
     .channel('rooms_channel')
     .on('postgres_changes', { event: '*', schema: 'public', table: 'rooms' }, payload => {
-      if (currentRoomId) fetchRoomInfo();
       fetchRooms();
+      if (currentRoomId) fetchRoomInfo();
     })
     .subscribe();
 }
 
-// Initial hub load
+// Initial load
 fetchRooms();
 
 // Logout placeholder
