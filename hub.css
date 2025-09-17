@@ -1,0 +1,154 @@
+/* Hub & Room Container */
+#hub-section, #room-section {
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+#hub-section.hidden, #room-section.hidden {
+  opacity: 0;
+  transform: translateY(-20px);
+  pointer-events: none;
+}
+
+/* Room Section Highlight */
+#room-section.showing #current-room-name {
+  color: #00bcd4; /* accent color */
+}
+
+/* Hub Create Room */
+#hub-section .create-room {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-bottom: 2rem;
+}
+
+#hub-section .create-room input {
+  padding: 0.75rem 1rem;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+}
+
+#hub-section .create-room button {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 4px;
+  background: #00bcd4;
+  color: #000;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+#hub-section .create-room button:hover {
+  transform: scale(1.05);
+  transition: transform 0.2s ease;
+}
+
+/* Rooms List */
+#hub-section .rooms {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+#hub-section .room-link {
+  display: block;
+  padding: 1rem;
+  text-decoration: none;
+  color: #121212;
+  font-weight: bold;
+  border-radius: 4px;
+  transition: 0.2s;
+}
+
+#hub-section .room-link:hover {
+  background: #00bcd4;
+  color: #000;
+}
+
+/* Room Section */
+#room-section .leave-room {
+  margin-bottom: 1rem;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 4px;
+  background: #00bcd4;
+  color: #000;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+#room-section .leave-room:hover {
+  transform: scale(1.05);
+  transition: transform 0.2s ease;
+}
+
+/* Chat */
+#room-section .chat {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+#room-section .chat-messages {
+  height: 300px;
+  overflow-y: auto;
+  border: 1px solid #ccc;
+  padding: 0.75rem;
+  border-radius: 5px;
+  scroll-behavior: smooth;
+  background: #ffffff;
+}
+
+#room-section .chat input {
+  padding: 0.5rem 1rem;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  flex: 1;
+}
+
+#room-section .chat button {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 5px;
+  background: #00bcd4;
+  color: #000;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+#room-section .chat button:hover {
+  transform: scale(1.05);
+  transition: transform 0.2s ease;
+}
+
+/* System messages styling */
+#room-section .chat div[style*="SYSTEM"] {
+  font-style: italic;
+  color: #00bcd4;
+  opacity: 0.7;
+}
+
+/* Light/Dark mode toggle styles */
+[data-theme="dark"] #room-section .chat-messages,
+[data-theme="dark"] #hub-section .rooms,
+[data-theme="dark"] #hub-section .create-room input,
+[data-theme="dark"] #hub-section .create-room button,
+[data-theme="dark"] #room-section .chat input,
+[data-theme="dark"] #room-section .chat button,
+[data-theme="dark"] #room-section .leave-room {
+  background: #121212;
+  color: #f5f5f5;
+  border-color: #333;
+}
+
+[data-theme="dark"] #hub-section .room-link:hover,
+[data-theme="dark"] #hub-section .create-room button,
+[data-theme="dark"] #room-section .chat button,
+[data-theme="dark"] #room-section .leave-room {
+  background: #00ffe7;
+  color: #000;
+}
